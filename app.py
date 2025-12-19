@@ -14,11 +14,20 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Envelope", use_column_width=True)
 
-    image_path = "/content/temp_envelope.png"
-    image.save(image_path)
+    # Convert uploaded image to OpenCV format (no saving to disk)
+image_np = np.array(image)
+image_cv = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
-    processed_image = preprocess_image(image_path)
-    ocr_text = extract_text(processed_image)
+# Preprocess image directly
+gray = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
+blur = cv2.GaussianBlur(gray, (5, 5), 0)
+processed_image = cv2.threshold(
+    blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+)[1]
+
+# OCR
+ocr_text = extract_text(processed_image)
+
 
     st.subheader("📝 Extracted Text")
     st.text(ocr_text)
